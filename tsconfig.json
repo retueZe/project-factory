@@ -1,0 +1,12 @@
+{
+    "include": ["src/**/*.ts"],
+    "compilerOptions": {
+        "target": "es2022",
+        "moduleResolution": "nodenext",
+        "lib": ["es2022", "dom"],
+        "strict": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "downlevelIteration": true
+    }
+}

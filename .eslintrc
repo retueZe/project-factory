@@ -1,0 +1,21 @@
+{
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "plugins": ["@typescript-eslint", "deprecation"],
+    "ignorePatterns": ["dist", "*.js", "*.mjs", "*.cjs"],
+    "rules": {
+        "indent": ["error", 4],
+        "linebreak-style": ["error", "unix"],
+        "quotes": ["error", "single"],
+        "semi": ["error", "never"],
+        "eqeqeq": "error",
+        "no-console": "warn",
+        "no-constant-condition": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "deprecation/deprecation": "warn"
+    }
+}
