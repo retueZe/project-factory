@@ -54,6 +54,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "minimatch": "^9.0.0",
     "prompts": "^2.4.0"
   }
 }

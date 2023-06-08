@@ -16,8 +16,6 @@ export async function install<V extends Record<string, any> = Record<string, nev
     await template.onInstalling(directory, variables)
 
     for (const {targetPath: relativeTargetPath, sourcePath: absolutePath, action} of template.files) {
-        if (action === 'ignore') continue
-
         const targetPath = resolve(directory, relativeTargetPath)
         const targetDirectory = dirname(targetPath)
 

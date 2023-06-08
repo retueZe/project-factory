@@ -3,10 +3,12 @@ import * as prompts from 'prompts'
 import { readdir } from './private/readdir'
 import { relative } from 'node:path'
 import { toAbsolute } from './private/toAbsolute'
+import { IgnorePatternList } from './private/IgnorePatternList'
 
 export type TemplateArgs<I extends Record<string, any> = Record<string, never>, V extends I = I> = {
     name: string
     directory?: string | null
+    ignorePatterns?: Iterable<string> | null
     inputFileExtension?: string | null
     insertionPattern?: string | null
     promptScript?: Iterable<Readonly<PromptObject<I>>> | null
@@ -81,11 +83,15 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
     static async create<I extends Record<string, any> = Record<string, never>, V extends I = I>(
         args: Readonly<TemplateArgs<I, V>>
     ): Promise<Template<I, V>> {
-        const templateDirectory = toAbsolute(args.directory ?? '.')
+        const directory = toAbsolute(args.directory ?? '.')
+        const ignorePatterns = new IgnorePatternList(args.ignorePatterns)
         const files: string[] = []
 
-        for await (const file of readdir(templateDirectory, {recursive: true}))
+        for await (const file of readdir(directory, {recursive: true})) {
+            if (ignorePatterns.test(file, directory)) continue
+
             files.push(file)
+        }
 
         return new Template(args, files)
     }

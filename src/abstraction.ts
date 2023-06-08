@@ -12,4 +12,4 @@ export type TemplateFile = {
     sourcePath: string
     action: TemplateFileAction
 }
-export type TemplateFileAction = 'ignore' | 'copy' | 'copy-inserted'
+export type TemplateFileAction = 'copy' | 'copy-inserted'
