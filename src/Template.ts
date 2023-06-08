@@ -114,7 +114,7 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
             : this._onInstalled(directory, variables)
     }
 }
-export function template<I extends Record<string, any> = Record<string, never>, V extends I = I>(
+export function createTemplate<I extends Record<string, any> = Record<string, never>, V extends I = I>(
     args: Readonly<TemplateArgs<I, V>>
 ): Promise<Template<I, V>> {
     return Template.create(args)
