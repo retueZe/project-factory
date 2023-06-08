@@ -54,7 +54,6 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "execa": "^5.1.0",
     "prompts": "^2.4.0"
   }
 }
