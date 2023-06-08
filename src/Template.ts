@@ -111,12 +111,12 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
     }
     onInstalling(directory: string, variables: V): PromiseLike<void> {
         return this._onInstalling === null
-            ? Promise.resolve(undefined)
+            ? Promise.resolve()
             : this._onInstalling(directory, variables)
     }
     onInstalled(directory: string, variables: V): PromiseLike<void> {
         return this._onInstalled === null
-            ? Promise.resolve(undefined)
+            ? Promise.resolve()
             : this._onInstalled(directory, variables)
     }
 }

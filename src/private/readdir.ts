@@ -1,4 +1,4 @@
-import { readdir as nodeReaddir, stat } from 'fs/promises'
+import { readdir as nodeReaddir, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
 export type ReaddirOptions = {

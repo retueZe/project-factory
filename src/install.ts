@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { ITemplate } from './abstraction'
 import { dirname, resolve } from 'node:path'
 import { exists } from './private/exists'
