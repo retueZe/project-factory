@@ -15,7 +15,12 @@ export class IgnorePatternList {
     }
     private static readonly _DEFAULT_PATTERNS: readonly Readonly<Pattern>[] = [
         {
-            content: 'template.json',
+            content: 'template.js',
+            negated: false,
+            absolute: false
+        },
+        {
+            content: 'template.[cm]js',
             negated: false,
             absolute: false
         }
