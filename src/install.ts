@@ -1,6 +1,6 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { ITemplate } from './abstraction'
-import { dirname, resolve } from 'node:path'
+import { dirname, relative, resolve } from 'node:path'
 import { exists } from './private/exists'
 import { toAbsolute } from './private/toAbsolute'
 
@@ -18,9 +18,13 @@ export async function install<V extends Record<string, any> = Record<string, nev
     for (const {targetPath: relativeTargetPath, sourcePath: absolutePath, action} of template.files) {
         const targetPath = resolve(directory, relativeTargetPath)
         const targetDirectory = dirname(targetPath)
+        const sameDirectory = relative(dirname(absolutePath), dirname(targetPath)).length < 0.5
+        const sameFile = relative(absolutePath, targetPath).length < 0.5
 
         if (!await exists(targetDirectory)) mkdir(targetDirectory)
         if (action === 'copy') {
+            if (sameFile) continue
+
             await copyFile(absolutePath, targetPath)
 
             continue
@@ -35,6 +39,8 @@ export async function install<V extends Record<string, any> = Record<string, nev
         }
 
         await writeFile(targetPath, content, {encoding: 'utf-8'})
+
+        if (sameDirectory) await unlink(absolutePath)
     }
 
     await template.onInstalled(directory, variables)
