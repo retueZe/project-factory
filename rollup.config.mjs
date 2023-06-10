@@ -3,6 +3,8 @@ import terser from '@rollup/plugin-terser'
 import dts from 'rollup-plugin-dts'
 import * as path from 'node:path'
 
+const EXTERNAL = ['minimatch', 'prompts', 'node:fs/promises', 'node:path']
+
 function createEntryFileNames(extension) {
     extension ??= '.js'
 
@@ -33,7 +35,7 @@ function applyDefaultConfig(config) {
     return {
         ...config,
         input: createInput(['']),
-        external: []
+        external: EXTERNAL
     }
 }
 

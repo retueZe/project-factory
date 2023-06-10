@@ -1,5 +1,5 @@
 import type { ITemplate, TemplateFile, TemplateFileAction } from './abstraction'
-import * as prompts from 'prompts'
+import prompts from 'prompts'
 import { readdir } from './private/readdir'
 import { relative } from 'node:path'
 import { toAbsolute } from './private/toAbsolute'
@@ -29,10 +29,6 @@ export type InstallProcessCallback<V extends Record<string, any> = Record<string
 
 export class Template<I extends Record<string, any> = Record<string, never>, V extends I = I> implements ITemplate<V> {
     static readonly DEFAULT_INSERTION_PATTERN = '<($)'
-    static readonly DEFAULT_BASH_SCRIPT_SHELL = 'bash'
-    static readonly DEFAULT_BATCH_SCRIPT_SHELL = 'cmd'
-    static readonly DEFAULT_BASH_SCRIPT_EXTENSION = '.sh'
-    static readonly DEFAULT_BATCH_SCRIPT_EXTENSION = '.bat'
     private readonly _directory: string
     // should be `readonly Readonly<PromptObject<I>>[]`, but `prompts` typings are shit
     private readonly _promptScript: Readonly<PromptObject<I>>[]
@@ -67,12 +63,12 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
         }
 
         this.files = adaptedFiles
+        this._insertionPattern = args.insertionPattern ?? Template.DEFAULT_INSERTION_PATTERN
         const promptScript = args.promptScript
         this._promptScript = typeof promptScript === 'undefined' || promptScript === null
             ? []
             : [...promptScript]
         this._onPromptSubmit = args.onPromptSubmit ?? Template._defaultPromptSubmitCallback
-        this._insertionPattern = args.insertionPattern ?? Template.DEFAULT_INSERTION_PATTERN
         this._onInstalling = args.onInstalling ?? null
         this._onInstalled = args.onInstalled ?? null
     }
