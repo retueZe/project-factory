@@ -1,8 +1,7 @@
 import type { ITemplate, TemplateFile, TemplateFileAction } from './abstraction'
 import prompts from 'prompts'
 import { readdir } from './private/readdir'
-import { relative } from 'node:path'
-import { toAbsolute } from './private/toAbsolute'
+import { relative, resolve } from 'node:path'
 import { IgnorePatternList } from './private/IgnorePatternList'
 
 export type TemplateArgs<I extends Record<string, any> = Record<string, never>, V extends I = I> = {
@@ -44,7 +43,7 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
         files: Iterable<string>
     ) {
         this.name = args.name
-        this._directory = toAbsolute(args.directory ?? '.')
+        this._directory = resolve(args.directory ?? '.')
         const inputFileExtension = args.inputFileExtension ?? '.in'
         const adaptedFiles: Readonly<TemplateFile>[] = []
 
@@ -79,7 +78,7 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
     static async create<I extends Record<string, any> = Record<string, never>, V extends I = I>(
         args: Readonly<TemplateArgs<I, V>>
     ): Promise<Template<I, V>> {
-        const directory = toAbsolute(args.directory ?? '.')
+        const directory = resolve(args.directory ?? '.')
         const ignorePatterns = new IgnorePatternList(args.ignorePatterns)
         const files: string[] = []
 

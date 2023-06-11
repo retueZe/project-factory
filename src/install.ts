@@ -2,13 +2,12 @@ import { copyFile, mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { ITemplate } from './abstraction'
 import { dirname, relative, resolve } from 'node:path'
 import { exists } from './private/exists'
-import { toAbsolute } from './private/toAbsolute'
 
 export async function install<V extends Record<string, any> = Record<string, never>>(
     _directory: string,
     template: ITemplate<V>
 ): Promise<void> {
-    const directory = toAbsolute(_directory)
+    const directory = resolve(_directory)
     const variables = await template.configure()
 
     if (!await exists(directory)) await mkdir(directory)
