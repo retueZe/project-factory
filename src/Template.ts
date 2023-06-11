@@ -1,8 +1,8 @@
-import type { ITemplate, TemplateFile, TemplateFileAction } from './abstraction'
+import type { ITemplate, TemplateFile, TemplateFileAction } from './abstraction.js'
 import prompts from 'prompts'
-import { readdir } from './private/readdir'
+import { readdir } from './private/readdir.js'
 import { relative, resolve } from 'node:path'
-import { IgnorePatternList } from './private/IgnorePatternList'
+import { IgnorePatternList } from './private/IgnorePatternList.js'
 
 /** @since v1.0.0 */
 export type TemplateArgs<I extends Record<string, any> = Record<string, never>, V extends I = I> = {

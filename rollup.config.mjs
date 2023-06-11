@@ -42,20 +42,12 @@ function applyDefaultConfig(config) {
 /** @type {import('rollup').RollupOptions[]} */
 const config = [
     {
-        output: [
-            {
-                dir: 'dist',
-                entryFileNames: createEntryFileNames('.cjs'),
-                chunkFileNames: '.chunks/[name]-[hash].cjs',
-                format: 'cjs'
-            },
-            {
-                dir: 'dist',
-                entryFileNames: createEntryFileNames('.mjs'),
-                chunkFileNames: '.chunks/[name]-[hash].mjs',
-                format: 'esm'
-            }
-        ],
+        output: {
+            dir: 'dist',
+            entryFileNames: createEntryFileNames(),
+            chunkFileNames: '.chunks/[name]-[hash].js',
+            format: 'esm'
+        },
         plugins: [
             typescript(),
             terser({

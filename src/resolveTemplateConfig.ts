@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import prompts from 'prompts'
-import type { TemplateArgs, TemplateConfig } from './Template'
+import type { TemplateArgs, TemplateConfig } from './Template.js'
 
 export async function resolveTemplateConfig<I extends Record<string, any> = Record<string, never>, V extends I = I>(
     config: TemplateConfig<I, V>,

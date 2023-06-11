@@ -1,8 +1,8 @@
 import { copyFile, mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
-import { ITemplate } from './abstraction'
+import { ITemplate } from './abstraction.js'
 import { dirname, relative, resolve } from 'node:path'
-import { exists } from './private/exists'
-import { readdir } from './private/readdir'
+import { exists } from './private/exists.js'
+import { readdir } from './private/readdir.js'
 
 /** @since v1.0.0 */
 export async function install<V extends Record<string, any> = Record<string, never>>(
