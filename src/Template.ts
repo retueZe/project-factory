@@ -5,9 +5,7 @@ import { relative, resolve } from 'node:path'
 import { IgnorePatternList } from './private/IgnorePatternList.js'
 
 /** @since v1.0.0 */
-export type TemplateArgs<I extends Record<string, any> = Record<string, never>, V extends I = I> = {
-    /** @since v1.0.0 */
-    name: string
+export type TemplateArgs<I extends Record<string, any> = any, V extends I = I> = {
     /**
      * Directory of template files. If this directory is relative:
      * - if using configuration files, before being passed to {@link createTemplate}, should be resolved from the directory where the configuration is located;
@@ -65,25 +63,17 @@ export type TemplateArgs<I extends Record<string, any> = Record<string, never>, 
      */
     onInstalled?: InstallProcessCallback<V> | null
 }
-/**
- * Objects of this type will be read from template configuration files.
- * @since v1.0.0
- */
-export type TemplateConfig<I extends Record<string, any> = Record<string, never>, V extends I = I> =
-    | TemplateArgs<I, V>
-    | TemplateArgs<I, V>[]
-    | PromiseLike<TemplateArgs<I, V> | TemplateArgs<I, V>[]>
-type PromptObject<V extends Record<string, any> = Record<string, never>> =
+type PromptObject<V extends Record<string, any> = any> =
     prompts.PromptObject<Extract<keyof V, string>>
 /** @since v1.0.0 */
-export type PromptSubmitCallback<I extends Record<string, any> = Record<string, never>, V extends I = I> =
+export type PromptSubmitCallback<I extends Record<string, any> = any, V extends I = I> =
     (input: I) => PromiseLike<V>
 /** @since v1.0.0 */
-export type InstallProcessCallback<V extends Record<string, any> = Record<string, never>> =
+export type InstallProcessCallback<V extends Record<string, any> = any> =
     (directory: string, variables: V) => PromiseLike<void>
 
 /** @since v1.0.0 */
-export class Template<I extends Record<string, any> = Record<string, never>, V extends I = I> implements ITemplate<V> {
+export class Template<I extends Record<string, any> = any, V extends I = I> implements ITemplate<V> {
     static readonly DEFAULT_INSERTION_PATTERN = '<($)'
     private readonly _directory: string
     // should be `readonly Readonly<PromptObject<I>>[]`, but `prompts` typings are shit
@@ -92,14 +82,12 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
     private readonly _insertionPattern: string
     private readonly _onInstalling: InstallProcessCallback<V> | null
     private readonly _onInstalled: InstallProcessCallback<V> | null
-    readonly name: string
     readonly files: readonly Readonly<TemplateFile>[]
 
     private constructor(
         args: Readonly<TemplateArgs<I, V>>,
         files: Iterable<string>
     ) {
-        this.name = args.name
         this._directory = resolve(args.directory ?? '.')
         const inputFileExtension = args.inputFileExtension ?? '.in'
         const adaptedFiles: Readonly<TemplateFile>[] = []
@@ -136,7 +124,7 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
      * Should use {@link createTemplate}.
      * @since v1.0.0
      */
-    static async create<I extends Record<string, any> = Record<string, never>, V extends I = I>(
+    static async create<I extends Record<string, any> = any, V extends I = I>(
         args: Readonly<TemplateArgs<I, V>>
     ): Promise<Template<I, V>> {
         const directory = resolve(args.directory ?? '.')
@@ -177,7 +165,7 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
     }
 }
 /** @since v1.0.0 */
-export function createTemplate<I extends Record<string, any> = Record<string, never>, V extends I = I>(
+export function createTemplate<I extends Record<string, any> = any, V extends I = I>(
     args: Readonly<TemplateArgs<I, V>>
 ): Promise<Template<I, V>> {
     return Template.create(args)

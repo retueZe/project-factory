@@ -22,11 +22,11 @@
     "dist"
   ],
   "type": "module",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./package.json": "./package.json"
@@ -34,7 +34,7 @@
   "scripts": {
     "lint": "eslint .",
     "build:prod": "npm run lint && rollup -c",
-    "build:dev": "tsc --outDir dist --inlineSourceMap --module commonjs",
+    "build:dev": "tsc --outDir dist --inlineSourceMap",
     "clean": "rm -rf dist",
     "prepare": "npm run clean && npm run build:prod",
     "postpublish": "npm run clean"
@@ -53,7 +53,6 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "chalk": "^5.0.0",
     "minimatch": "^9.0.0",
     "prompts": "^2.4.0"
   }

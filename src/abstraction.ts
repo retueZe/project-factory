@@ -1,7 +1,5 @@
 /** @since v1.0.0 */
-export interface ITemplate<V extends Record<string, any> = Record<string, never>> {
-    /** @since v1.0.0 */
-    readonly name: string
+export interface ITemplate<V extends Record<string, any> = any> {
     /** @since v1.0.0 */
     readonly files: readonly Readonly<TemplateFile>[]
 

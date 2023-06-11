@@ -3,7 +3,10 @@ import terser from '@rollup/plugin-terser'
 import dts from 'rollup-plugin-dts'
 import * as path from 'node:path'
 
-const EXTERNAL = ['minimatch', 'prompts', 'node:fs/promises', 'node:path']
+const EXTERNAL = [
+    'minimatch', 'prompts',
+    'node:fs/promises', 'node:path', 'node:url'
+]
 
 function createEntryFileNames(extension) {
     extension ??= '.js'

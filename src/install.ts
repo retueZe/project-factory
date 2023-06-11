@@ -5,7 +5,7 @@ import { exists } from './private/exists.js'
 import { readdir } from './private/readdir.js'
 
 /** @since v1.0.0 */
-export async function install<V extends Record<string, any> = Record<string, never>>(
+export async function install<V extends Record<string, any> = any>(
     _directory: string,
     template: ITemplate<V>
 ): Promise<void> {
