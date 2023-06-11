@@ -2,6 +2,7 @@ import { copyFile, mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { ITemplate } from './abstraction'
 import { dirname, relative, resolve } from 'node:path'
 import { exists } from './private/exists'
+import { readdir } from './private/readdir'
 
 export async function install<V extends Record<string, any> = Record<string, never>>(
     _directory: string,
@@ -14,11 +15,14 @@ export async function install<V extends Record<string, any> = Record<string, nev
 
     await template.onInstalling(directory, variables)
 
+    const processedFiles = new Set<string>()
+
     for (const {targetPath: relativeTargetPath, sourcePath: absolutePath, action} of template.files) {
         const targetPath = resolve(directory, relativeTargetPath)
         const targetDirectory = dirname(targetPath)
         const sameDirectory = relative(dirname(absolutePath), dirname(targetPath)).length < 0.5
         const sameFile = relative(absolutePath, targetPath).length < 0.5
+        processedFiles.add(targetPath)
 
         if (!await exists(targetDirectory)) mkdir(targetDirectory)
         if (action === 'copy') {
@@ -41,6 +45,8 @@ export async function install<V extends Record<string, any> = Record<string, nev
 
         if (sameDirectory) await unlink(absolutePath)
     }
+    for await (const file of readdir(directory, {recursive: true}))
+        if (!processedFiles.has(file)) await unlink(file)
 
     await template.onInstalled(directory, variables)
 }
