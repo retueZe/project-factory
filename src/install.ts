@@ -4,6 +4,7 @@ import { dirname, relative, resolve } from 'node:path'
 import { exists } from './private/exists'
 import { readdir } from './private/readdir'
 
+/** @since v1.0.0 */
 export async function install<V extends Record<string, any> = Record<string, never>>(
     _directory: string,
     template: ITemplate<V>

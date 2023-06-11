@@ -4,28 +4,85 @@ import { readdir } from './private/readdir'
 import { relative, resolve } from 'node:path'
 import { IgnorePatternList } from './private/IgnorePatternList'
 
+/** @since v1.0.0 */
 export type TemplateArgs<I extends Record<string, any> = Record<string, never>, V extends I = I> = {
+    /** @since v1.0.0 */
     name: string
+    /**
+     * Directory of template files. If this directory is relative:
+     * - if using configuration files, before being passed to {@link createTemplate}, should be resolved from the directory where the configuration is located;
+     * - otherwise, will be resolved from the CWD.
+     * @since v1.0.0
+     */
     directory?: string | null
+    /**
+     * `.gitignore`-like ignore patterns. By default, following patterns are included implicitly:
+     * ```gitignore
+     * template.js
+     * template.[cm]js
+     * ```
+     * @since v1.0.0
+     */
     ignorePatterns?: Iterable<string> | null
+    /**
+     * While using {@link createTemplate}, `null` implies to `'.in'`.
+     * @since v1.0.0
+     */
     inputFileExtension?: string | null
+    /**
+     * A regular string, all the `'$'` inside of which will be replaced with `variableName` during {@link Template.createInsertionPattern} execution. While using {@link createTemplate}, `null` implies to `'<($)'`.
+     * @since v1.0.0
+     */
     insertionPattern?: string | null
+    /**
+     * Prompt objects used in {@link Template.configure} method, names of which will be variable names.
+     * @example
+     * ```javascript
+     * const promptScript = [
+     *     {
+     *         name: 'PKGNAME', // will be variable name
+     *         type: 'text',
+     *         message: '...'
+     *     }
+     * ]
+     * ```
+     * @since v1.0.0
+     */
     promptScript?: Iterable<Readonly<PromptObject<I>>> | null
+    /**
+     * Hook, executed after prompt input was successfully received. Allows to process the input before being passed to the input files.
+     * @since v1.0.0
+     */
     onPromptSubmit?: PromptSubmitCallback<I, V> | null
+    /**
+     * @see {@link Template.onInstalling}
+     * @since v1.0.0
+     */
     onInstalling?: InstallProcessCallback<V> | null
+    /**
+     * @see {@link Template.onInstalled}
+     * @since v1.0.0
+     */
     onInstalled?: InstallProcessCallback<V> | null
 }
+/**
+ * Objects of this type will be read from template configuration files.
+ * @since v1.0.0
+ */
 export type TemplateConfig<I extends Record<string, any> = Record<string, never>, V extends I = I> =
     | TemplateArgs<I, V>
     | TemplateArgs<I, V>[]
     | PromiseLike<TemplateArgs<I, V> | TemplateArgs<I, V>[]>
 type PromptObject<V extends Record<string, any> = Record<string, never>> =
     prompts.PromptObject<Extract<keyof V, string>>
+/** @since v1.0.0 */
 export type PromptSubmitCallback<I extends Record<string, any> = Record<string, never>, V extends I = I> =
     (input: I) => PromiseLike<V>
+/** @since v1.0.0 */
 export type InstallProcessCallback<V extends Record<string, any> = Record<string, never>> =
     (directory: string, variables: V) => PromiseLike<void>
 
+/** @since v1.0.0 */
 export class Template<I extends Record<string, any> = Record<string, never>, V extends I = I> implements ITemplate<V> {
     static readonly DEFAULT_INSERTION_PATTERN = '<($)'
     private readonly _directory: string
@@ -75,6 +132,10 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
     private static _defaultPromptSubmitCallback(this: void, input: any): Promise<any> {
         return Promise.resolve(input)
     }
+    /**
+     * Should use {@link createTemplate}.
+     * @since v1.0.0
+     */
     static async create<I extends Record<string, any> = Record<string, never>, V extends I = I>(
         args: Readonly<TemplateArgs<I, V>>
     ): Promise<Template<I, V>> {
@@ -115,6 +176,7 @@ export class Template<I extends Record<string, any> = Record<string, never>, V e
             : this._onInstalled(directory, variables)
     }
 }
+/** @since v1.0.0 */
 export function createTemplate<I extends Record<string, any> = Record<string, never>, V extends I = I>(
     args: Readonly<TemplateArgs<I, V>>
 ): Promise<Template<I, V>> {
