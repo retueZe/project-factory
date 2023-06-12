@@ -53,6 +53,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "execa": "^7.0.0",
     "minimatch": "^9.0.0",
     "prompts": "^2.4.0"
   }

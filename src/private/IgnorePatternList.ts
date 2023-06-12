@@ -23,6 +23,11 @@ export class IgnorePatternList {
             content: 'template.[cm]js',
             negated: false,
             absolute: false
+        },
+        {
+            content: 'template.deps.json',
+            negated: false,
+            absolute: false
         }
     ]
     private readonly _patterns: readonly Readonly<Pattern>[]

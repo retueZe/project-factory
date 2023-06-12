@@ -18,6 +18,7 @@ export type TemplateArgs<I extends Record<string, any> = any, V extends I = I> =
      * ```gitignore
      * template.js
      * template.[cm]js
+     * template.deps.json
      * ```
      * @since v1.0.0
      */

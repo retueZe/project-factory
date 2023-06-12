@@ -1,8 +1,8 @@
-import { dirname, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import prompts from 'prompts'
 import { exists } from './private/exists.js'
 import type { TemplateArgs } from './Template.js'
+import { importWithDeps, resolveTemplateDeps } from './TemplateDeps.js'
 
 /**
  * Objects of this type will be read from template configuration files.
@@ -30,7 +30,6 @@ const TEMPATE_CONFIG_FILE_NAMES: readonly string[] = [
     'template.cjs',
     'template.mjs'
 ]
-const __filename = fileURLToPath(import.meta.url)
 
 export async function resolveTemplateConfig(directory: string): Promise<TemplateArgs> {
     const config = await importTemplateConfig(directory)
@@ -56,10 +55,10 @@ async function importTemplateConfig(directory: string): Promise<TemplateConfig> 
 
     if (absoluteConfigPath === null) return {}
 
-    const importConfigPath = relative(dirname(__filename), absoluteConfigPath)
-        .replaceAll('\\', '/')
+    const configDeps = await resolveTemplateDeps(directory)
+    const configModule = await importWithDeps(absoluteConfigPath, configDeps)
 
-    return (await import(importConfigPath)).default
+    return configModule.default
 }
 async function resolveTemplateRouterConfig(directory: string, config: TemplateRouterConfig): Promise<TemplateArgs> {
     let cancelled = false
