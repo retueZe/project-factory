@@ -61,16 +61,20 @@ async function importTemplateConfig(directory: string): Promise<TemplateConfig> 
     return configModule.default
 }
 async function resolveTemplateRouterConfig(directory: string, config: TemplateRouterConfig): Promise<TemplateArgs> {
+    if (config.routes.length < 0.5) return {}
+
     let cancelled = false
-    const {routeIndex} = await prompts({
-        name: 'routeIndex',
-        type: 'select',
-        message: config.message ?? 'Select route:',
-        choices: config.routes.map((route, i) => ({
-            title: route.message ?? route.directory,
-            value: i
-        }))
-    }, {onCancel: () => cancelled = true})
+    const {routeIndex} = config.routes.length < 1.5
+        ? {routeIndex: 0}
+        : await prompts({
+            name: 'routeIndex',
+            type: 'select',
+            message: config.message ?? 'Select route:',
+            choices: config.routes.map((route, i) => ({
+                title: route.message ?? route.directory,
+                value: i
+            }))
+        }, {onCancel: () => cancelled = true})
 
     if (cancelled) throw new Error('No template was chosen.')
 
