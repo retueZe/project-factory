@@ -1,8 +1,9 @@
-import { copyFile, mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { ITemplate } from './abstraction.js'
 import { dirname, relative, resolve } from 'node:path'
 import { exists } from './private/exists.js'
 import { readdir } from './private/readdir.js'
+import { isEmptyDir } from './private/isEmptyDir.js'
 
 /** @since v1.0.0 */
 export async function install<V extends Record<string, any> = any>(
@@ -44,10 +45,16 @@ export async function install<V extends Record<string, any> = any>(
 
         await writeFile(targetPath, content, {encoding: 'utf-8'})
 
-        if (sameDirectory) await unlink(absolutePath)
+        if (sameDirectory) await rm(absolutePath, {force: true})
     }
     for await (const file of readdir(directory, {recursive: true}))
-        if (!processedFiles.has(file)) await unlink(file)
+        if (!processedFiles.has(file)) {
+            await rm(file, {force: true})
+
+            const directory = dirname(file)
+
+            if (await isEmptyDir(directory)) await rm(directory, {recursive: true, force: true})
+        }
 
     await template.onInstalled(directory, variables)
 }

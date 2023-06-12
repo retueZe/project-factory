@@ -1,10 +1,11 @@
 import { execa } from 'execa'
 import { randomUUID } from 'node:crypto'
-import { copyFile, mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, opendir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { importModule } from './private/importModule.js'
 import { exists } from './private/exists.js'
+import { Dir } from 'node:fs'
 
 export type TemplateDeps = Record<string, string>
 
@@ -23,16 +24,19 @@ export async function resolveTemplateDeps(directory: string): Promise<TemplateDe
 }
 export async function importWithDeps(path: string, deps: Readonly<TemplateDeps>): Promise<any> {
     let directory: string | null = null
+    let directoryHandle: Dir | null = null
 
     try {
         directory = join(tmpdir(), randomUUID())
-
         await mkdir(directory)
+        directoryHandle = await opendir(directory)
 
         return await importWithDepsCore(directory, path, deps)
     } finally {
-        if (directory !== null && process.env.NODE_ENV !== 'development')
-            await unlink(directory)
+        if (directoryHandle !== null)
+            await directoryHandle.close()
+        if (directory !== null)
+            await rm(directory, {recursive: true, force: true})
     }
 }
 async function importWithDepsCore(directory: string, path: string, deps: Readonly<TemplateDeps>): Promise<any> {
