@@ -19,10 +19,10 @@ export type TemplateRouterConfig = {
     /** @since v1.0.0 */
     message?: string | null
     /** @since v1.0.0 */
-    sharedDirectory?: string | null
+    sharedDirectories?: Iterable<string> | null
 }
 /** @since v1.0.0 */
-export type TemplateRoute = {
+export type TemplateRoute = string | {
     directory: string
     message?: string | null
 }
@@ -37,19 +37,18 @@ export async function resolveTemplateConfig(directory: string): Promise<Template
     const config = await importTemplateConfig(directory)
 
     if ('routes' in config) return await resolveTemplateRouterConfig(directory, config)
-    if (typeof config.directories !== 'undefined' && config.directories !== null) {
-        const resolvedDirectories: string[] = []
 
+    const resolvedDirectories: string[] = []
+
+    if (typeof config.directories !== 'undefined' && config.directories !== null)
         for (const subdirectory of config.directories)
             resolvedDirectories.push(resolve(directory, subdirectory))
-
-        if (!(config.ignoreCurrentDirectory ?? false)) {
-            config.ignoreCurrentDirectory = true
-            resolvedDirectories.push(resolve(directory))
-        }
-
-        config.directories = resolvedDirectories
+    if (!(config.ignoreCurrentDirectory ?? false)) {
+        config.ignoreCurrentDirectory = true
+        resolvedDirectories.push(resolve(directory))
     }
+
+    config.directories = resolvedDirectories
 
     return config
 }
@@ -84,7 +83,9 @@ async function resolveTemplateRouterConfig(directory: string, config: TemplateRo
             type: 'select',
             message: config.message ?? 'Select route:',
             choices: config.routes.map((route, i) => ({
-                title: route.message ?? route.directory,
+                title: typeof route === 'string'
+                    ? route
+                    : route.message ?? route.directory,
                 value: i
             }))
         }, {onCancel: () => cancelled = true})
@@ -92,7 +93,22 @@ async function resolveTemplateRouterConfig(directory: string, config: TemplateRo
     if (cancelled) throw new Error('No template was chosen.')
 
     const route = config.routes[routeIndex]
-    const routeDirectory = resolve(directory, route.directory)
+    const routeDirectory = resolve(directory, typeof route === 'string'
+        ? route
+        : route.directory)
+    const routedConfig = await resolveTemplateConfig(routeDirectory)
 
-    return await resolveTemplateConfig(routeDirectory)
+    if (typeof config.sharedDirectories !== 'undefined' && config.sharedDirectories !== null) {
+        const resolvedSharedDirectories: string[] = []
+
+        for (const subdirectory of config.sharedDirectories)
+            resolvedSharedDirectories.push(resolve(directory, subdirectory))
+
+        routedConfig.directories = [
+            ...routedConfig.directories ?? [],
+            ...resolvedSharedDirectories
+        ]
+    }
+
+    return routedConfig
 }
