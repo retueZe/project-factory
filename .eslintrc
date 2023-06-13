@@ -16,6 +16,7 @@
         "no-constant-condition": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/comma-dangle": "warn",
         "deprecation/deprecation": "warn"
     }
 }
