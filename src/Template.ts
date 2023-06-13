@@ -41,6 +41,11 @@ export type TemplateArgs = {
      */
     insertionPattern?: string | null
     /**
+     * Defines initial variables. Subsequently, a copy of this object will be used for variable collection.
+     * @since v1.0.0
+     */
+    variables?: Readonly<Record<string, any>> | null
+    /**
      * Prompt objects used in {@link Template.configure} method, names of which will be variable names.
      * @example
      * ```javascript
@@ -64,29 +69,28 @@ export type TemplateArgs = {
      * @see {@link Template.onInstalling}
      * @since v1.0.0
      */
-    onInstalling?: InstallProcessCallback | null
+    onInstalling?: TemplateInstallCallback | null
     /**
      * @see {@link Template.onInstalled}
      * @since v1.0.0
      */
-    onInstalled?: InstallProcessCallback | null
+    onInstalled?: TemplateInstallCallback | null
 }
 /** @since v1.0.0 */
-export type PromptSubmitCallback =
-    (input: Record<string, any>) => PromiseLike<Record<string, any>>
+export type PromptSubmitCallback = (input: Record<string, any>) => void | PromiseLike<void>
 /** @since v1.0.0 */
-export type InstallProcessCallback<V extends Record<string, any> = any> =
-    (directory: string, variables: V) => PromiseLike<void>
+export type TemplateInstallCallback = (directory: string, variables: Record<string, any>) => void | PromiseLike<void>
 
 /** @since v1.0.0 */
 export class Template implements ITemplate {
     static readonly DEFAULT_INSERTION_PATTERN = '<($)'
     // should be `readonly Readonly<PromptObject<I>>[]`, but `prompts` typings are shit
+    private readonly _insertionPattern: string
+    private readonly _variables: Readonly<Record<string, any>>
     private readonly _promptScript: Readonly<PromptObject>[]
     private readonly _onPromptSubmit: PromptSubmitCallback
-    private readonly _insertionPattern: string
-    private readonly _onInstalling: InstallProcessCallback | null
-    private readonly _onInstalled: InstallProcessCallback | null
+    private readonly _onInstalling: TemplateInstallCallback | null
+    private readonly _onInstalled: TemplateInstallCallback | null
     readonly files: readonly Readonly<TemplateFile>[]
 
     private constructor(
@@ -113,6 +117,7 @@ export class Template implements ITemplate {
 
         this.files = adaptedFiles
         this._insertionPattern = args.insertionPattern ?? Template.DEFAULT_INSERTION_PATTERN
+        this._variables = args.variables ?? {}
         const promptScript = args.promptScript
         this._promptScript = typeof promptScript === 'undefined' || promptScript === null
             ? []
@@ -158,19 +163,30 @@ export class Template implements ITemplate {
         return this._insertionPattern.replace('$', variableName)
     }
     async configure(): Promise<Record<string, any>> {
-        const input = await executePromptScript(this._promptScript)
+        const input = {...this._variables}
+        Object.assign(input, await executePromptScript(this._promptScript))
 
-        return await this._onPromptSubmit(input)
+        await this._onPromptSubmit(input)
+
+        return input
     }
     onInstalling(directory: string, variables: Record<string, any>): PromiseLike<void> {
-        return this._onInstalling === null
+        if (this._onInstalling === null) return Promise.resolve()
+
+        const result = this._onInstalling(directory, variables)
+
+        return typeof result === 'undefined'
             ? Promise.resolve()
-            : this._onInstalling(directory, variables)
+            : result
     }
     onInstalled(directory: string, variables: Record<string, any>): PromiseLike<void> {
-        return this._onInstalled === null
+        if (this._onInstalled === null) return Promise.resolve()
+
+        const result = this._onInstalled(directory, variables)
+
+        return typeof result === 'undefined'
             ? Promise.resolve()
-            : this._onInstalled(directory, variables)
+            : result
     }
 }
 /** @since v1.0.0 */

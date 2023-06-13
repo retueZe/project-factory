@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
-import prompts from 'prompts'
+import prompts, { PromptObject } from 'prompts'
+import { executePromptScript } from './private/executePromptScript.js'
 import { exists } from './private/exists.js'
 import type { TemplateArgs } from './Template.js'
 import { importWithDeps, resolveTemplateDeps } from './TemplateDeps.js'
@@ -15,17 +16,34 @@ export type TemplateConfig =
 /** @since v1.0.0 */
 export type TemplateRouterConfig = {
     /** @since v1.0.0 */
-    routes: readonly Readonly<TemplateRoute>[],
+    routes: readonly Readonly<TemplateRoute>[]
     /** @since v1.0.0 */
     message?: string | null
     /** @since v1.0.0 */
     sharedDirectories?: Iterable<string> | null
+    /** @since v1.0.0 */
+    variables?: Readonly<Record<string, any>> | null
+    /** @since v1.0.0 */
+    promptScript?: Iterable<Readonly<PromptObject>> | null
+    /** @since v1.0.0 */
+    onPromptSubmit?: TemplateRouterPromptSubmitCallback | null
+    /** @since v1.0.0 */
+    onRouteSubmit?: TemplateRouteSubmitCallback | null
+    /** @since v1.0.0 */
+    onRouted?: TemplateRoutedCallback | null
 }
 /** @since v1.0.0 */
 export type TemplateRoute = string | {
     directory: string
     message?: string | null
 }
+/** @since v1.0.0 */
+export type TemplateRouterPromptSubmitCallback = (variables: Record<string, any>) => void | PromiseLike<void>
+/** @since v1.0.0 */
+export type TemplateRouteSubmitCallback =
+    (variables: Record<string, any>, directory: string, index: number) => void | PromiseLike<void>
+/** @since v1.0.0 */
+export type TemplateRoutedCallback = (args: TemplateArgs) => void | PromiseLike<void>
 
 const TEMPATE_CONFIG_FILE_NAMES: readonly string[] = [
     'template.js',
@@ -33,10 +51,14 @@ const TEMPATE_CONFIG_FILE_NAMES: readonly string[] = [
     'template.mjs'
 ]
 
-export async function resolveTemplateConfig(directory: string): Promise<TemplateArgs> {
+export async function resolveTemplateConfig(
+    directory: string,
+    variables?: Record<string, any> | null
+): Promise<TemplateArgs> {
+    variables ??= {}
     const config = await importTemplateConfig(directory)
 
-    if ('routes' in config) return await resolveTemplateRouterConfig(directory, config)
+    if ('routes' in config) return await resolveTemplateRouterConfig(directory, config, variables)
 
     const resolvedDirectories: string[] = []
 
@@ -49,6 +71,8 @@ export async function resolveTemplateConfig(directory: string): Promise<Template
     }
 
     config.directories = resolvedDirectories
+    Object.assign(variables, config.variables ?? {})
+    config.variables = variables
 
     return config
 }
@@ -72,8 +96,27 @@ async function importTemplateConfig(directory: string): Promise<TemplateConfig> 
 
     return configModule.default
 }
-async function resolveTemplateRouterConfig(directory: string, config: TemplateRouterConfig): Promise<TemplateArgs> {
+async function resolveTemplateRouterConfig(
+    directory: string,
+    config: TemplateRouterConfig,
+    variables: Record<string, any>
+): Promise<TemplateArgs> {
     if (config.routes.length < 0.5) return {}
+
+    Object.assign(variables, config.variables ?? {})
+
+    if (typeof config.promptScript !== 'undefined' && config.promptScript !== null) {
+        const promptScript = [...config.promptScript]
+        const input = await executePromptScript(promptScript)
+
+        if (typeof config.onPromptSubmit === 'function') {
+            const result = config.onPromptSubmit(input)
+
+            if (typeof result !== 'undefined') await result
+        }
+
+        Object.assign(variables, input)
+    }
 
     let cancelled = false
     const {routeIndex} = config.routes.length < 1.5
@@ -96,7 +139,14 @@ async function resolveTemplateRouterConfig(directory: string, config: TemplateRo
     const routeDirectory = resolve(directory, typeof route === 'string'
         ? route
         : route.directory)
-    const routedConfig = await resolveTemplateConfig(routeDirectory)
+
+    if (typeof config.onRouteSubmit === 'function') {
+        const result = config.onRouteSubmit(variables, routeDirectory, routeIndex)
+
+        if (typeof result !== 'undefined') await result
+    }
+
+    const args = await resolveTemplateConfig(routeDirectory, variables)
 
     if (typeof config.sharedDirectories !== 'undefined' && config.sharedDirectories !== null) {
         const resolvedSharedDirectories: string[] = []
@@ -104,11 +154,16 @@ async function resolveTemplateRouterConfig(directory: string, config: TemplateRo
         for (const subdirectory of config.sharedDirectories)
             resolvedSharedDirectories.push(resolve(directory, subdirectory))
 
-        routedConfig.directories = [
-            ...routedConfig.directories ?? [],
+        args.directories = [
+            ...args.directories ?? [],
             ...resolvedSharedDirectories
         ]
     }
+    if (typeof config.onRouted !== 'undefined' && config.onRouted !== null) {
+        const result = config.onRouted(args)
 
-    return routedConfig
+        if (typeof result !== 'undefined') await result
+    }
+
+    return args
 }
