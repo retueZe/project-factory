@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "project-factory",
-  "version": "1.0.0-a.5",
+  "version": "1.0.0-a.6",
   "author": "retueze",
   "license": "MIT",
   "description": "Build tool based on custom templates.",
