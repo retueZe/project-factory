@@ -18,6 +18,8 @@ export type TemplateRouterConfig = {
     routes: readonly Readonly<TemplateRoute>[],
     /** @since v1.0.0 */
     message?: string | null
+    /** @since v1.0.0 */
+    sharedDirectory?: string | null
 }
 /** @since v1.0.0 */
 export type TemplateRoute = {
@@ -35,8 +37,19 @@ export async function resolveTemplateConfig(directory: string): Promise<Template
     const config = await importTemplateConfig(directory)
 
     if ('routes' in config) return await resolveTemplateRouterConfig(directory, config)
+    if (typeof config.directories !== 'undefined' && config.directories !== null) {
+        const resolvedDirectories: string[] = []
 
-    config.directory = resolve(directory, config.directory ?? '.')
+        for (const subdirectory of config.directories)
+            resolvedDirectories.push(resolve(directory, subdirectory))
+
+        if (!(config.ignoreCurrentDirectory ?? false)) {
+            config.ignoreCurrentDirectory = true
+            resolvedDirectories.push(resolve(directory))
+        }
+
+        config.directories = resolvedDirectories
+    }
 
     return config
 }
