@@ -1,8 +1,9 @@
 import type { ITemplate, TemplateFile, TemplateFileAction } from './abstraction.js'
-import prompts, { PromptObject } from 'prompts'
+import { PromptObject } from 'prompts'
 import { readdir } from './private/readdir.js'
 import { relative, resolve } from 'node:path'
 import { IgnorePatternList } from './private/IgnorePatternList.js'
+import { executePromptScript } from './private/executePromptScript.js'
 
 /** @since v1.0.0 */
 export type TemplateArgs = {
@@ -157,15 +158,9 @@ export class Template implements ITemplate {
         return this._insertionPattern.replace('$', variableName)
     }
     async configure(): Promise<Record<string, any>> {
-        let cancelled = false
+        const input = await executePromptScript(this._promptScript)
 
-        const input = await prompts(this._promptScript, {
-            onCancel: () => cancelled = true
-        })
-
-        if (cancelled) throw new Error('')
-
-        return await this._onPromptSubmit(input as any)
+        return await this._onPromptSubmit(input)
     }
     onInstalling(directory: string, variables: Record<string, any>): PromiseLike<void> {
         return this._onInstalling === null
