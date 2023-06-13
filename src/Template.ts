@@ -1,11 +1,11 @@
 import type { ITemplate, TemplateFile, TemplateFileAction } from './abstraction.js'
-import prompts from 'prompts'
+import prompts, { PromptObject } from 'prompts'
 import { readdir } from './private/readdir.js'
 import { relative, resolve } from 'node:path'
 import { IgnorePatternList } from './private/IgnorePatternList.js'
 
 /** @since v1.0.0 */
-export type TemplateArgs<I extends Record<string, any> = any, V extends I = I> = {
+export type TemplateArgs = {
     /**
      * Extra directories for template files. Paths are relative:
      * - if using configuration files, before being passed to {@link createTemplate}, should be resolved from the directory where the configuration is located;
@@ -53,45 +53,43 @@ export type TemplateArgs<I extends Record<string, any> = any, V extends I = I> =
      * ```
      * @since v1.0.0
      */
-    promptScript?: Iterable<Readonly<PromptObject<I>>> | null
+    promptScript?: Iterable<Readonly<PromptObject>> | null
     /**
      * Hook, executed after prompt input was successfully received. Allows to process the input before being passed to the input files.
      * @since v1.0.0
      */
-    onPromptSubmit?: PromptSubmitCallback<I, V> | null
+    onPromptSubmit?: PromptSubmitCallback | null
     /**
      * @see {@link Template.onInstalling}
      * @since v1.0.0
      */
-    onInstalling?: InstallProcessCallback<V> | null
+    onInstalling?: InstallProcessCallback | null
     /**
      * @see {@link Template.onInstalled}
      * @since v1.0.0
      */
-    onInstalled?: InstallProcessCallback<V> | null
+    onInstalled?: InstallProcessCallback | null
 }
-type PromptObject<V extends Record<string, any> = any> =
-    prompts.PromptObject<Extract<keyof V, string>>
 /** @since v1.0.0 */
-export type PromptSubmitCallback<I extends Record<string, any> = any, V extends I = I> =
-    (input: I) => PromiseLike<V>
+export type PromptSubmitCallback =
+    (input: Record<string, any>) => PromiseLike<Record<string, any>>
 /** @since v1.0.0 */
 export type InstallProcessCallback<V extends Record<string, any> = any> =
     (directory: string, variables: V) => PromiseLike<void>
 
 /** @since v1.0.0 */
-export class Template<I extends Record<string, any> = any, V extends I = I> implements ITemplate<V> {
+export class Template implements ITemplate {
     static readonly DEFAULT_INSERTION_PATTERN = '<($)'
     // should be `readonly Readonly<PromptObject<I>>[]`, but `prompts` typings are shit
-    private readonly _promptScript: Readonly<PromptObject<I>>[]
-    private readonly _onPromptSubmit: PromptSubmitCallback<I, V>
+    private readonly _promptScript: Readonly<PromptObject>[]
+    private readonly _onPromptSubmit: PromptSubmitCallback
     private readonly _insertionPattern: string
-    private readonly _onInstalling: InstallProcessCallback<V> | null
-    private readonly _onInstalled: InstallProcessCallback<V> | null
+    private readonly _onInstalling: InstallProcessCallback | null
+    private readonly _onInstalled: InstallProcessCallback | null
     readonly files: readonly Readonly<TemplateFile>[]
 
     private constructor(
-        args: Readonly<TemplateArgs<I, V>>,
+        args: Readonly<TemplateArgs>,
         directories: Iterable<[string, Iterable<string>]>
     ) {
         const inputFileExtension = args.inputFileExtension ?? '.in'
@@ -130,9 +128,7 @@ export class Template<I extends Record<string, any> = any, V extends I = I> impl
      * Should use {@link createTemplate}.
      * @since v1.0.0
      */
-    static async create<I extends Record<string, any> = any, V extends I = I>(
-        args: Readonly<TemplateArgs<I, V>>
-    ): Promise<Template<I, V>> {
+    static async create(args: Readonly<TemplateArgs>): Promise<Template> {
         const directories = []
 
         if (!(args.ignoreCurrentDirectory ?? false)) directories.push(resolve('.'))
@@ -160,7 +156,7 @@ export class Template<I extends Record<string, any> = any, V extends I = I> impl
     createInsertionPattern(variableName: string): string | RegExp {
         return this._insertionPattern.replace('$', variableName)
     }
-    async configure(): Promise<V> {
+    async configure(): Promise<Record<string, any>> {
         let cancelled = false
 
         const input = await prompts(this._promptScript, {
@@ -171,20 +167,18 @@ export class Template<I extends Record<string, any> = any, V extends I = I> impl
 
         return await this._onPromptSubmit(input as any)
     }
-    onInstalling(directory: string, variables: V): PromiseLike<void> {
+    onInstalling(directory: string, variables: Record<string, any>): PromiseLike<void> {
         return this._onInstalling === null
             ? Promise.resolve()
             : this._onInstalling(directory, variables)
     }
-    onInstalled(directory: string, variables: V): PromiseLike<void> {
+    onInstalled(directory: string, variables: Record<string, any>): PromiseLike<void> {
         return this._onInstalled === null
             ? Promise.resolve()
             : this._onInstalled(directory, variables)
     }
 }
 /** @since v1.0.0 */
-export function createTemplate<I extends Record<string, any> = any, V extends I = I>(
-    args: Readonly<TemplateArgs<I, V>>
-): Promise<Template<I, V>> {
+export function createTemplate(args: Readonly<TemplateArgs>): Promise<Template> {
     return Template.create(args)
 }

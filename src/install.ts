@@ -6,10 +6,7 @@ import { readdir } from './private/readdir.js'
 import { isEmptyDir } from './private/isEmptyDir.js'
 
 /** @since v1.0.0 */
-export async function install<V extends Record<string, any> = any>(
-    _directory: string,
-    template: ITemplate<V>
-): Promise<void> {
+export async function install(_directory: string, template: ITemplate): Promise<void> {
     const directory = resolve(_directory)
     const variables = await template.configure()
 

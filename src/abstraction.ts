@@ -1,5 +1,5 @@
 /** @since v1.0.0 */
-export interface ITemplate<V extends Record<string, any> = any> {
+export interface ITemplate {
     /** @since v1.0.0 */
     readonly files: readonly Readonly<TemplateFile>[]
 
@@ -15,21 +15,21 @@ export interface ITemplate<V extends Record<string, any> = any> {
      * Reads input variables used for template installing. Reads variables from prompt by default.
      * @since v1.0.0
      */
-    configure(): PromiseLike<V>
+    configure(): PromiseLike<Record<string, any>>
     /**
      * Hook, executed before all the FS operations have performed.
      * @param directory directory the template will be installed to; must be absolute
      * @param variables result of a {@link ITemplate.configure} call
      * @since v1.0.0
      */
-    onInstalling(directory: string, variables: V): PromiseLike<void>
+    onInstalling(directory: string, variables: Record<string, any>): PromiseLike<void>
     /**
      * Hook, executed after all the FS operations have performed.
      * @param directory directory the template will be installed to; must be absolute
      * @param variables result of a {@link configure} call
      * @since v1.0.0
      */
-    onInstalled(directory: string, variables: V): PromiseLike<void>
+    onInstalled(directory: string, variables: Record<string, any>): PromiseLike<void>
 }
 /** @since v1.0.0 */
 export type TemplateFile = {
