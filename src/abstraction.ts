@@ -12,34 +12,34 @@ export interface ITemplate {
      */
     createInsertionPattern(variableName: string): RegExp | string
     /**
-     * Reads input variables used for template installing. Reads variables from prompt by default.
+     * Reads input variables used for template scaffolding. Reads variables from prompt by default.
      * @since v1.0.0
      */
     configure(): PromiseLike<Record<string, any>>
     /**
      * Hook, executed before all the FS operations have performed.
-     * @param directory directory the template will be installed to; must be absolute
+     * @param directory directory the template will be scaffolded to; must be absolute
      * @param variables result of a {@link ITemplate.configure} call
      * @since v1.0.0
      */
-    onInstalling(directory: string, variables: Record<string, any>): PromiseLike<void>
+    onScaffolding(directory: string, variables: Record<string, any>): PromiseLike<void>
     /**
      * Hook, executed after all the FS operations have performed.
-     * @param directory directory the template will be installed to; must be absolute
+     * @param directory directory the template will be scaffolded to; must be absolute
      * @param variables result of a {@link configure} call
      * @since v1.0.0
      */
-    onInstalled(directory: string, variables: Record<string, any>): PromiseLike<void>
+    onScaffolded(directory: string, variables: Record<string, any>): PromiseLike<void>
 }
 /** @since v1.0.0 */
 export type TemplateFile = {
     /**
-     * Relative path, indicating where to install the file.
+     * Relative path, indicating where to scaffold the file.
      * @since v1.0.0
      */
     targetPath: string
     /**
-     * Absolute path, indicating where the installing file is located.
+     * Absolute path, indicating where the scaffolding file is located.
      * @since v1.0.0
      */
     sourcePath: string

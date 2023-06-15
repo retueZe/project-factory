@@ -6,15 +6,15 @@ import { readdir } from './private/readdir.js'
 import { isEmptyDir } from './private/isEmptyDir.js'
 
 /** @since v1.0.0 */
-export async function install(_directory: string, template: ITemplate): Promise<void> {
+export async function scaffold(_directory: string, template: ITemplate): Promise<void> {
     const directory = resolve(_directory)
     const variables = await template.configure()
 
     if (!await exists(directory)) await mkdir(directory)
 
-    variables.INSTALLDIR = directory
+    variables.PREFIX = directory
 
-    await template.onInstalling(directory, variables)
+    await template.onScaffolding(directory, variables)
 
     const processedFiles = new Set<string>()
 
@@ -55,5 +55,5 @@ export async function install(_directory: string, template: ITemplate): Promise<
             if (await isEmptyDir(directory)) await rm(directory, {recursive: true, force: true})
         }
 
-    await template.onInstalled(directory, variables)
+    await template.onScaffolded(directory, variables)
 }

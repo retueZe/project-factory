@@ -5,7 +5,7 @@ First package is a library containing the core of the initializer. Second one pr
 ## Usage
 
 ```shell
-npm init by-template <template-specification> [<install-directory>]
+npm init by-template <template-specification> [<scaffold-directory>]
 ```
 
 Examples of `<template-specification>` (some templates of mine):
@@ -16,7 +16,7 @@ Examples of `<template-specification>` (some templates of mine):
 - `https://example.net/`
 - `file:../my-local-template`
 
-The default value of `<install-directory>` is `.` (refers to the CWD). The input is received via [`prompts`](https://npmjs.com/prompts).
+The default value of `<scaffold-directory>` is `.` (refers to the CWD). The input is received via [`prompts`](https://npmjs.com/prompts).
 
 ### Creating custom templates
 

@@ -65,20 +65,20 @@ export type TemplateArgs = {
      */
     onPromptSubmit?: PromptSubmitCallback | null
     /**
-     * @see {@link Template.onInstalling}
+     * @see {@link Template.onScaffolding}
      * @since v1.0.0
      */
-    onInstalling?: TemplateInstallCallback | null
+    onScaffolding?: TemplateScaffoldCallback | null
     /**
-     * @see {@link Template.onInstalled}
+     * @see {@link Template.onScaffolded}
      * @since v1.0.0
      */
-    onInstalled?: TemplateInstallCallback | null
+    onScaffolded?: TemplateScaffoldCallback | null
 }
 /** @since v1.0.0 */
 export type PromptSubmitCallback = (input: Record<string, any>) => void | PromiseLike<void>
 /** @since v1.0.0 */
-export type TemplateInstallCallback = (directory: string, variables: Record<string, any>) => void | PromiseLike<void>
+export type TemplateScaffoldCallback = (directory: string, variables: Record<string, any>) => void | PromiseLike<void>
 
 /** @since v1.0.0 */
 export class Template implements ITemplate {
@@ -88,8 +88,8 @@ export class Template implements ITemplate {
     private readonly _variables: Readonly<Record<string, any>>
     private readonly _promptScript: Readonly<PromptObject>[]
     private readonly _onPromptSubmit: PromptSubmitCallback
-    private readonly _onInstalling: TemplateInstallCallback | null
-    private readonly _onInstalled: TemplateInstallCallback | null
+    private readonly _onScaffolding: TemplateScaffoldCallback | null
+    private readonly _onScaffolded: TemplateScaffoldCallback | null
     readonly files: readonly Readonly<TemplateFile>[]
 
     private constructor(
@@ -122,8 +122,8 @@ export class Template implements ITemplate {
             ? []
             : [...promptScript]
         this._onPromptSubmit = args.onPromptSubmit ?? Template._defaultPromptSubmitCallback
-        this._onInstalling = args.onInstalling ?? null
-        this._onInstalled = args.onInstalled ?? null
+        this._onScaffolding = args.onScaffolding ?? null
+        this._onScaffolded = args.onScaffolded ?? null
     }
 
     private static _defaultPromptSubmitCallback(this: void, input: any): Promise<any> {
@@ -169,19 +169,19 @@ export class Template implements ITemplate {
 
         return input
     }
-    onInstalling(directory: string, variables: Record<string, any>): PromiseLike<void> {
-        if (this._onInstalling === null) return Promise.resolve()
+    onScaffolding(directory: string, variables: Record<string, any>): PromiseLike<void> {
+        if (this._onScaffolding === null) return Promise.resolve()
 
-        const result = this._onInstalling(directory, variables)
+        const result = this._onScaffolding(directory, variables)
 
         return typeof result === 'undefined'
             ? Promise.resolve()
             : result
     }
-    onInstalled(directory: string, variables: Record<string, any>): PromiseLike<void> {
-        if (this._onInstalled === null) return Promise.resolve()
+    onScaffolded(directory: string, variables: Record<string, any>): PromiseLike<void> {
+        if (this._onScaffolded === null) return Promise.resolve()
 
-        const result = this._onInstalled(directory, variables)
+        const result = this._onScaffolded(directory, variables)
 
         return typeof result === 'undefined'
             ? Promise.resolve()
