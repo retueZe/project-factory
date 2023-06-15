@@ -20,11 +20,6 @@ export class IgnorePatternList {
             absolute: false
         },
         {
-            content: 'template.[cm]js',
-            negated: false,
-            absolute: false
-        },
-        {
             content: 'template.deps.json',
             negated: false,
             absolute: false

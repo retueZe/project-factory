@@ -23,7 +23,6 @@ export type TemplateArgs = {
      * `.gitignore`-like ignore patterns. By default, following patterns are included implicitly:
      * ```gitignore
      * template.js
-     * template.[cm]js
      * template.deps.json
      * ```
      * First of all, files from the provided directories are settled, and only then ignore patterns are applied.
