@@ -2,8 +2,8 @@ import { resolve } from 'node:path'
 import prompts, { PromptObject } from 'prompts'
 import { executePromptScript } from './private/executePromptScript.js'
 import { exists } from './private/exists.js'
+import { executeInContext, prepareExecutionContext } from './private/prepareExecutionContext.js'
 import type { TemplateArgs } from './Template.js'
-import { importWithDeps, resolveTemplateDeps } from './TemplateDeps.js'
 
 /**
  * Objects of this type will be read from template configuration files.
@@ -28,7 +28,7 @@ export type TemplateRouterConfig = {
     /** @since v1.0.0 */
     onPromptSubmit?: TemplateRouterPromptSubmitCallback | null
     /** @since v1.0.0 */
-    onRouteSubmit?: TemplateRouteSubmitCallback | null
+    onRouting?: TemplateRoutingCallback | null
     /** @since v1.0.0 */
     onRouted?: TemplateRoutedCallback | null
 }
@@ -40,25 +40,45 @@ export type TemplateRoute = string | {
 /** @since v1.0.0 */
 export type TemplateRouterPromptSubmitCallback = (variables: Record<string, any>) => void | PromiseLike<void>
 /** @since v1.0.0 */
-export type TemplateRouteSubmitCallback =
+export type TemplateRoutingCallback =
     (variables: Record<string, any>, directory: string, index: number) => void | PromiseLike<void>
 /** @since v1.0.0 */
 export type TemplateRoutedCallback = (args: TemplateArgs) => void | PromiseLike<void>
 
-const TEMPATE_CONFIG_FILE_NAMES: readonly string[] = [
-    'template.js',
-    'template.cjs',
-    'template.mjs'
-]
+const TEMPATE_CONFIG_FILE_NAME = 'template.js'
 
 export async function resolveTemplateConfig(
     directory: string,
-    variables?: Record<string, any> | null
+    variables?: Record<string, any> | null,
+    temporaryDirectory?: string | null
 ): Promise<TemplateArgs> {
     variables ??= {}
-    const config = await importTemplateConfig(directory)
+    temporaryDirectory ??= null
 
-    if ('routes' in config) return await resolveTemplateRouterConfig(directory, config, variables)
+    if (temporaryDirectory !== null)
+        return await resolveTemplateConfigCore(directory, variables, temporaryDirectory)
+
+    let releaseContext: (() => Promise<void>) | null = null
+
+    try {
+        const [_temporaryDirectory, _releseContext] = await prepareExecutionContext(directory)
+        temporaryDirectory = _temporaryDirectory
+        releaseContext = _releseContext
+
+        return await resolveTemplateConfigCore(directory, variables, temporaryDirectory)
+    } finally {
+        if (releaseContext !== null) await releaseContext()
+    }
+}
+async function resolveTemplateConfigCore(
+    directory: string,
+    variables: Record<string, any>,
+    temporaryDirectory: string
+): Promise<TemplateArgs> {
+    const config = await importTemplateConfig(directory, temporaryDirectory)
+
+    if ('routes' in config)
+        return await resolveTemplateRouterConfig(directory, config, variables, temporaryDirectory)
 
     const resolvedDirectories: string[] = []
 
@@ -76,30 +96,20 @@ export async function resolveTemplateConfig(
 
     return config
 }
-async function importTemplateConfig(directory: string): Promise<TemplateConfig> {
-    let absoluteConfigPath: string | null = null
+async function importTemplateConfig(directory: string, temporaryDirectory: string): Promise<TemplateConfig> {
+    const configPath = resolve(directory, TEMPATE_CONFIG_FILE_NAME)
 
-    for (const fileName of TEMPATE_CONFIG_FILE_NAMES) {
-        const configPath = resolve(directory, fileName)
+    if (!(await exists(configPath))) return {}
 
-        if (!(await exists(configPath))) continue
-
-        absoluteConfigPath = configPath
-
-        break
-    }
-
-    if (absoluteConfigPath === null) return {}
-
-    const configDeps = await resolveTemplateDeps(directory)
-    const configModule = await importWithDeps(absoluteConfigPath, configDeps)
+    const configModule = await executeInContext(temporaryDirectory, configPath)
 
     return configModule.default
 }
 async function resolveTemplateRouterConfig(
     directory: string,
     config: TemplateRouterConfig,
-    variables: Record<string, any>
+    variables: Record<string, any>,
+    temporaryDirectory: string
 ): Promise<TemplateArgs> {
     if (config.routes.length < 0.5) return {}
 
@@ -140,13 +150,13 @@ async function resolveTemplateRouterConfig(
         ? route
         : route.directory)
 
-    if (typeof config.onRouteSubmit === 'function') {
-        const result = config.onRouteSubmit(variables, routeDirectory, routeIndex)
+    if (typeof config.onRouting === 'function') {
+        const result = config.onRouting(variables, routeDirectory, routeIndex)
 
         if (typeof result !== 'undefined') await result
     }
 
-    const args = await resolveTemplateConfig(routeDirectory, variables)
+    const args = await resolveTemplateConfig(routeDirectory, variables, temporaryDirectory)
 
     if (typeof config.sharedDirectories !== 'undefined' && config.sharedDirectories !== null) {
         const resolvedSharedDirectories: string[] = []
