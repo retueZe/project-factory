@@ -36,14 +36,14 @@ export type TemplateRouterConfig = {
 export type TemplateRoute = string | {
     directory: string
     message?: string | null
+    tag?: string | null
 }
 /** @since v1.0.0 */
 export type TemplateRouterPromptSubmitCallback = (variables: Record<string, any>) => void | PromiseLike<void>
 /** @since v1.0.0 */
-export type TemplateRoutingCallback =
-    (variables: Record<string, any>, directory: string, index: number) => void | PromiseLike<void>
+export type TemplateRoutingCallback = (variables: Record<string, any>, tag: string) => void | PromiseLike<void>
 /** @since v1.0.0 */
-export type TemplateRoutedCallback = (args: TemplateArgs) => void | PromiseLike<void>
+export type TemplateRoutedCallback = (args: TemplateArgs, tag: string) => void | PromiseLike<void>
 
 const TEMPATE_CONFIG_FILE_NAME = 'template.js'
 
@@ -149,9 +149,12 @@ async function resolveTemplateRouterConfig(
     const routeDirectory = resolve(directory, typeof route === 'string'
         ? route
         : route.directory)
+    const routeTag = typeof route === 'string'
+        ? route
+        : route.tag ?? routeDirectory
 
     if (typeof config.onRouting === 'function') {
-        const result = config.onRouting(variables, routeDirectory, routeIndex)
+        const result = config.onRouting(variables, routeTag)
 
         if (typeof result !== 'undefined') await result
     }
@@ -170,7 +173,7 @@ async function resolveTemplateRouterConfig(
         ]
     }
     if (typeof config.onRouted !== 'undefined' && config.onRouted !== null) {
-        const result = config.onRouted(args)
+        const result = config.onRouted(args, routeTag)
 
         if (typeof result !== 'undefined') await result
     }
