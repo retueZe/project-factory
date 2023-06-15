@@ -12,6 +12,8 @@ export async function install(_directory: string, template: ITemplate): Promise<
 
     if (!await exists(directory)) await mkdir(directory)
 
+    variables.INSTALLDIR = directory
+
     await template.onInstalling(directory, variables)
 
     const processedFiles = new Set<string>()
