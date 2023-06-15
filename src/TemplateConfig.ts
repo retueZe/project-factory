@@ -15,38 +15,110 @@ export type TemplateConfig =
     | PromiseLike<TemplateArgs | TemplateRouterConfig>
 /** @since v1.0.0 */
 export type TemplateRouterConfig = {
-    /** @since v1.0.0 */
+    /**
+     * If length is 0, throws an error. If length is 1, instantly routes to the only route. Otherwise, prompt `'select'` menu pops up.
+     * @since v1.0.0
+     */
     routes: readonly Readonly<TemplateRoute>[]
-    /** @since v1.0.0 */
+    /**
+     * Message for the router's `'select'` prompt.
+     * @since v1.0.0
+     */
     message?: string | null
-    /** @since v1.0.0 */
+    /**
+     * Directories that will be included to {@link TemplateArgs.directories} property. Relative paths will be resolved relative to router configuration location.
+     * @since v1.0.0
+     */
     sharedDirectories?: Iterable<string> | null
-    /** @since v1.0.0 */
+    /**
+     * Object that will be assigned to variables record.
+     * @since v1.0.0
+     */
     variables?: Readonly<Record<string, any>> | null
-    /** @since v1.0.0 */
+    /**
+     * Additional prompt script executing before the router's `'select'` menu pops up.
+     * @since v1.0.0
+     */
     promptScript?: Iterable<Readonly<PromptObject>> | null
-    /** @since v1.0.0 */
+    /**
+     * Executes after {@link TemplateRouterConfig.promptScript} succeeds.
+     * @since v1.0.0
+     */
     onPromptSubmit?: TemplateRouterPromptSubmitCallback | null
-    /** @since v1.0.0 */
-    onRouting?: TemplateRoutingCallback | null
-    /** @since v1.0.0 */
-    onRouted?: TemplateRoutedCallback | null
+    /**
+     * Executes before resolving the route's configuration.
+     * @since v1.0.0
+     */
+    onResolving?: TemplateRouteResolvingCallback | null
+    /**
+     * Executes after the route's configuration has been resolved.
+     * @since v1.0.0
+     */
+    onResolved?: TemplateRouteResolvedCallback | null
 }
 /** @since v1.0.0 */
 export type TemplateRoute = string | {
+    /**
+     * Where the router should look for the route's configuration. Relative to the router's location.
+     * @since v1.0.0
+     */
     directory: string
+    /**
+     * `'select'` prompt message. Might be colored like
+     * ```javascript
+     * {
+     *     directory: 'js'
+     *     message: chalk.yellow`JavaScript`
+     * }
+     * ```
+     */
     message?: string | null
+    /**
+     * Tag that will be passed to {@link TemplateRouterConfig.onResolving} and {@link TemplateRouterConfig.onResolved}. If it is not presented, {@link TemplateRoute.directory} is used instead. The purpose of tags is to identify routes among each other not depending on its directory name or prompt menu position. Multiple tag system implementation:
+     * ```javascript
+     * {
+     *     routes: [
+     *         {
+     *             directory: 'route'
+     *             tag: 'one two three spaces-replaced-by-dashes'
+     *         }
+     *     ],
+     *     onResolved: (args, tag) => {
+     *         const tags = new Set(tag.split(' '))
+     *         ...
+     *     }
+     * }
+     * ```
+     * OR
+     * ```javascript
+     * {
+     *     routes: [
+     *         {
+     *             directory: 'route'
+     *             tag: 'primary secondary-one secondary-two'
+     *         }
+     *     ],
+     *     onResolved: (args, tag) => {
+     *         const splittedTag = tag.split(' ')
+     *         const primaryTag = splittedTag[0]
+     *         const secondaryTags = new Set(splittedTags.slice(1))
+     *         ...
+     *     }
+     * }
+     * ```
+     */
     tag?: string | null
 }
 /** @since v1.0.0 */
 export type TemplateRouterPromptSubmitCallback = (variables: Record<string, any>) => void | PromiseLike<void>
 /** @since v1.0.0 */
-export type TemplateRoutingCallback = (variables: Record<string, any>, tag: string) => void | PromiseLike<void>
+export type TemplateRouteResolvingCallback = (variables: Record<string, any>, tag: string) => void | PromiseLike<void>
 /** @since v1.0.0 */
-export type TemplateRoutedCallback = (args: TemplateArgs, tag: string) => void | PromiseLike<void>
+export type TemplateRouteResolvedCallback = (args: TemplateArgs, tag: string) => void | PromiseLike<void>
 
 const TEMPATE_CONFIG_FILE_NAME = 'template.js'
 
+/** @since v1.0.0 */
 export async function resolveTemplateConfig(
     directory: string,
     variables?: Record<string, any> | null,
@@ -153,8 +225,8 @@ async function resolveTemplateRouterConfig(
         ? route
         : route.tag ?? routeDirectory
 
-    if (typeof config.onRouting === 'function') {
-        const result = config.onRouting(variables, routeTag)
+    if (typeof config.onResolving === 'function') {
+        const result = config.onResolving(variables, routeTag)
 
         if (typeof result !== 'undefined') await result
     }
@@ -172,8 +244,8 @@ async function resolveTemplateRouterConfig(
             ...resolvedSharedDirectories
         ]
     }
-    if (typeof config.onRouted !== 'undefined' && config.onRouted !== null) {
-        const result = config.onRouted(args, routeTag)
+    if (typeof config.onResolved !== 'undefined' && config.onResolved !== null) {
+        const result = config.onResolved(args, routeTag)
 
         if (typeof result !== 'undefined') await result
     }
