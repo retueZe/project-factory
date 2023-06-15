@@ -1,9 +1,10 @@
 import { resolve } from 'node:path'
 import prompts, { PromptObject } from 'prompts'
+import { concatFunctions } from './private/concatFunctions.js'
 import { executePromptScript } from './private/executePromptScript.js'
 import { exists } from './private/exists.js'
 import { executeInContext, prepareExecutionContext } from './private/prepareExecutionContext.js'
-import { TemplateArgs } from './Template.js'
+import { TemplateArgs, TemplateScaffoldCallback } from './Template.js'
 
 /**
  * Objects of this type will be read from template configuration files.
@@ -65,6 +66,16 @@ export type TemplateRouterConfig = {
      * @since v1.0.0
      */
     onResolved?: TemplateRouteResolvedCallback | null
+    /**
+     * Executes before {@link TemplateArgs.onScaffolding}.
+     * @since v1.0.0
+     */
+    onScaffolding?: TemplateScaffoldCallback | null
+    /**
+     * Executes after {@link TemplateArgs.onScaffolded}.
+     * @since v1.0.0
+     */
+    onScaffolded?: TemplateScaffoldCallback | null
 }
 /** @since v1.0.0 */
 export type TemplateRoute = string | {
@@ -248,15 +259,23 @@ async function resolveTemplateRouterConfig(
     if (typeof config.sharedDirectories !== 'undefined' && config.sharedDirectories !== null) {
         const resolvedSharedDirectories: string[] = []
 
-        for (const subdirectory of config.sharedDirectories)
-            resolvedSharedDirectories.push(resolve(directory, subdirectory))
+        for (const sharedDirectory of config.sharedDirectories)
+            resolvedSharedDirectories.push(resolve(directory, sharedDirectory))
 
         args.directories = [
             ...args.directories ?? [],
             ...resolvedSharedDirectories
         ]
     }
-    if (typeof config.onResolved !== 'undefined' && config.onResolved !== null) {
+    if (typeof config.onScaffolding === 'function')
+        args.onScaffolding = typeof args.onScaffolding === 'function'
+            ? concatFunctions(config.onScaffolding, args.onScaffolding)
+            : config.onScaffolding
+    if (typeof config.onScaffolded === 'function')
+        args.onScaffolded = typeof args.onScaffolded === 'function'
+            ? concatFunctions(args.onScaffolded, config.onScaffolded)
+            : config.onScaffolded
+    if (typeof config.onResolved === 'function') {
         const result = config.onResolved(args, routeTag)
 
         if (typeof result !== 'undefined') await result
