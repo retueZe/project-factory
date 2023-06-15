@@ -3,7 +3,7 @@ import prompts, { PromptObject } from 'prompts'
 import { executePromptScript } from './private/executePromptScript.js'
 import { exists } from './private/exists.js'
 import { executeInContext, prepareExecutionContext } from './private/prepareExecutionContext.js'
-import type { TemplateArgs } from './Template.js'
+import { TemplateArgs } from './Template.js'
 
 /**
  * Objects of this type will be read from template configuration files.
@@ -25,6 +25,16 @@ export type TemplateRouterConfig = {
      * @since v1.0.0
      */
     message?: string | null
+    /**
+     * If {@link TemplateArgs.inputFileExtension} is not specified in the resolved configuration, then this one will be used.
+     * @since v1.0.0
+     */
+    inputFileExtension?: string | null
+    /**
+     * If {@link TemplateArgs.insertionPattern} is not specified in the resolved configuration, then this one will be used.
+     * @since v1.0.0
+     */
+    insertionPattern?: string | null
     /**
      * Directories that will be included to {@link TemplateArgs.directories} property. Relative paths will be resolved relative to router configuration location.
      * @since v1.0.0
@@ -232,6 +242,8 @@ async function resolveTemplateRouterConfig(
     }
 
     const args = await resolveTemplateConfig(routeDirectory, variables, temporaryDirectory)
+    args.inputFileExtension ??= config.inputFileExtension
+    args.insertionPattern ??= config.insertionPattern
 
     if (typeof config.sharedDirectories !== 'undefined' && config.sharedDirectories !== null) {
         const resolvedSharedDirectories: string[] = []

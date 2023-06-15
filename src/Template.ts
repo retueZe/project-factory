@@ -31,11 +31,13 @@ export type TemplateArgs = {
     ignorePatterns?: Iterable<string> | null
     /**
      * While using {@link createTemplate}, `null` implies to `'.in'`.
+     * @see {@link TemplateRouterConfig.inputFileExtension}
      * @since v1.0.0
      */
     inputFileExtension?: string | null
     /**
      * A regular string, all the `'$'` inside of which will be replaced with `variableName` during {@link Template.createInsertionPattern} execution. While using {@link createTemplate}, `null` implies to `'<($)'`.
+     * @see {@link TemplateRouterConfig.insertionPattern}
      * @since v1.0.0
      */
     insertionPattern?: string | null
