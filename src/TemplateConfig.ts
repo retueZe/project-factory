@@ -206,7 +206,7 @@ async function resolveTemplateRouterConfig(
         : await prompts({
             name: 'routeIndex',
             type: 'select',
-            message: config.message ?? 'Select route:',
+            message: config.message ?? 'Select a route:',
             choices: config.routes.map((route, i) => ({
                 title: typeof route === 'string'
                     ? route
