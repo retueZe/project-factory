@@ -1,10 +1,10 @@
 {
   "private": true,
   "name": "project-factory",
-  "version": "1.0.0-a.6",
+  "version": "1.0.0-a.7",
   "author": "retueze",
   "license": "MIT",
-  "description": "Build tool based on custom templates.",
+  "description": "Project scaffolding library.",
   "keywords": [
     "package",
     "project",
@@ -12,7 +12,9 @@
     "initializer",
     "build",
     "template",
-    "configure"
+    "configure",
+    "scaffold",
+    "scaffolding"
   ],
   "repository": {
     "type": "git",
