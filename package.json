@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "project-factory",
-  "version": "1.0.0-a.9",
+  "version": "1.0.0",
   "author": "retueze",
   "license": "MIT",
   "description": "Project scaffolding library.",
@@ -24,12 +24,12 @@
     "dist"
   ],
   "type": "module",
-  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "module": "dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },

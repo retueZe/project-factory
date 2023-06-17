@@ -5,7 +5,7 @@ First package is a library containing the core of the initializer. Second one pr
 ## Usage
 
 ```shell
-npm init by-template <template-specification> [<scaffold-directory>]
+npm init by-template <template-specification> [<prefix>]
 ```
 
 Examples of `<template-specification>` (some templates of mine):
@@ -16,7 +16,7 @@ Examples of `<template-specification>` (some templates of mine):
 - `https://example.net/`
 - `file:../my-local-template`
 
-The default value of `<scaffold-directory>` is `.` (refers to the CWD). The input is received via [`prompts`](https://npmjs.com/prompts).
+The default value of `<prefix>` (where to scaffold) is `.` (refers to the CWD). The input is received via [`prompts`](https://npmjs.com/prompts).
 
 ## Examples
 
@@ -47,7 +47,7 @@ To create a custom template take a look at [my ones](https://github.com/project-
 └── template.deps.json
 ```
 
-The `template.js` and `template.deps.json` files are ignored by default. `template.js` may be either a regular configuration file or a router configuration file.
+The `template.js` and `template.deps.json` files are ignored by default. `template.js` may be either a regular configuration file or a router configuration file. `*.in` files are input files the variables will be inserted in.
 
 `./template.js`
 ```javascript
@@ -56,7 +56,7 @@ import chalk from 'chalk'
 export default {
     routes: [
         {
-            directory: 'js'
+            directory: 'js',
             message: chalk.yellow('JavaScript')
         },
         {
