@@ -29,7 +29,7 @@ export async function scaffold(_directory: string, template: ITemplate): Promise
         if (action === 'copy') {
             if (sameFile) continue
 
-            await copyFile(absolutePath, targetPath)
+            await copyFile(absolutePath, targetDirectory)
 
             continue
         }
