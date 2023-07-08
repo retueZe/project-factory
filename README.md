@@ -1,11 +1,11 @@
-# `project-factory` & `create-by-template`
+# `project-factory` & `create-based-on`
 
 First package is a library containing the core of the initializer. Second one provides a CLI executable compatible with `npm init`.
 
 ## Usage
 
 ```shell
-npm init by-template <template-specification> [<prefix>]
+npm init based-on <template-specification> [<prefix>]
 ```
 
 Examples of `<template-specification>` (some templates of mine):
@@ -21,13 +21,13 @@ The default value of `<prefix>` (where to scaffold) is `.` (refers to the CWD). 
 ## Examples
 
 ```shell
-npm init by-template npm-package my-package
+npm init based-on npm-package my-package
 ```
 
 To scaffold a template project use:
 
 ```shell
-npm init by-template template-base my-template
+npm init based-on template-base my-template
 ```
 
 ## Creating custom templates
