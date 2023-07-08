@@ -25,11 +25,11 @@ export async function scaffold(_directory: string, template: ITemplate): Promise
         const sameFile = relative(absolutePath, targetPath).length < 0.5
         processedFiles.add(targetPath)
 
-        if (!await exists(targetDirectory)) mkdir(targetDirectory, {recursive: true})
+        if (!await exists(targetDirectory)) await mkdir(targetDirectory, {recursive: true})
         if (action === 'copy') {
             if (sameFile) continue
 
-            await copyFile(absolutePath, targetDirectory)
+            await copyFile(absolutePath, targetPath)
 
             continue
         }
