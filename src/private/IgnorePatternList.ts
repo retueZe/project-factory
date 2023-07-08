@@ -1,5 +1,5 @@
 import { minimatch, MinimatchOptions } from 'minimatch'
-import { isAbsolute, relative } from 'node:path'
+import { isAbsolute, relative } from 'node:path/posix'
 
 type Pattern = {
     content: string
